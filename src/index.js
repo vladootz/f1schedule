@@ -26,7 +26,8 @@ const SCHEDULE_DATA = {
     {
       name: "Formula 1 - First Practice Session",
       start: "2025-10-03T17:30:00+08:00",
-      end: "2025-10-03T18:30:00+08:00"
+      end: "2025-10-03T18:30:00+08:00",
+      important: true
     },
     {
       name: "F1 Academy - Qualifying Session",
@@ -46,7 +47,8 @@ const SCHEDULE_DATA = {
     {
       name: "Formula 1 - Second Practice Session",
       start: "2025-10-03T21:00:00+08:00",
-      end: "2025-10-03T22:00:00+08:00"
+      end: "2025-10-03T22:00:00+08:00",
+      important: true
     },
     {
       name: "F1 Experiences - Champions Club Trophy Photo & Grid Walk",
@@ -73,7 +75,8 @@ const SCHEDULE_DATA = {
     {
       name: "Formula 1 - Third Practice Session",
       start: "2025-10-04T17:30:00+08:00",
-      end: "2025-10-04T18:30:00+08:00"
+      end: "2025-10-04T18:30:00+08:00",
+      important: true
     },
     {
       name: "Paddock Club - Pit Lane Walk",
@@ -83,7 +86,8 @@ const SCHEDULE_DATA = {
     {
       name: "Formula 1 - Qualifying Session",
       start: "2025-10-04T21:00:00+08:00",
-      end: "2025-10-04T22:00:00+08:00"
+      end: "2025-10-04T22:00:00+08:00",
+      important: true
     },
     {
       name: "Formula 1 - Press Conference",
@@ -125,7 +129,8 @@ const SCHEDULE_DATA = {
     {
       name: "Formula 1 - Grand Prix",
       start: "2025-10-05T20:00:00+08:00",
-      end: "2025-10-05T22:00:00+08:00"
+      end: "2025-10-05T22:00:00+08:00",
+      important: true
     }
   ]
 };
@@ -241,6 +246,17 @@ const HTML_TEMPLATE = `
 
         .event-card.upcoming {
             border-left-color: #e10600;
+        }
+
+        .event-card.important {
+            background: linear-gradient(135deg, #1a0e0e 0%, #1a1a1a 100%);
+            border-left-color: #e10600;
+            border-left-width: 5px;
+        }
+
+        .event-card.important.current {
+            background: linear-gradient(135deg, #1a2e1a 0%, #0f1a0f 100%);
+            border-left-color: #00d800;
         }
 
         .event-name {
@@ -568,10 +584,6 @@ const HTML_TEMPLATE = `
             <div class="countdown-event">Formula 1 - First Practice Session</div>
             <div class="countdown-timer">
                 <div class="countdown-unit">
-                    <div class="countdown-value" id="days">00</div>
-                    <div class="countdown-label">Days</div>
-                </div>
-                <div class="countdown-unit">
                     <div class="countdown-value" id="hours">00</div>
                     <div class="countdown-label">Hours</div>
                 </div>
@@ -656,9 +668,12 @@ const HTML_TEMPLATE = `
                     const endTime = new Date(event.end);
                     const isCurrent = now >= startTime && now <= endTime;
                     const isUpcoming = now < startTime;
+                    const isImportant = event.important || false;
 
-                    const cardClass = isCurrent ? 'event-card current' :
-                                     isUpcoming ? 'event-card upcoming' : 'event-card';
+                    let cardClass = 'event-card';
+                    if (isImportant) cardClass += ' important';
+                    if (isCurrent) cardClass += ' current';
+                    else if (isUpcoming) cardClass += ' upcoming';
 
                     const statusBadge = isCurrent ?
                         '<span class="status-badge status-live"><span class="live-indicator"></span>LIVE NOW</span>' :
@@ -753,19 +768,18 @@ const HTML_TEMPLATE = `
                 targetTab.click();
             }
 
-            // Scroll to current or next event
-            setTimeout(() => {
-                const targetElement = currentEventId ?
-                    document.getElementById(currentEventId) :
-                    nextEventId ? document.getElementById(nextEventId) : null;
-
-                if (targetElement) {
-                    targetElement.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
-                }
-            }, 100);
+            // Scroll to current event only (not next upcoming)
+            if (currentEventId) {
+                setTimeout(() => {
+                    const targetElement = document.getElementById(currentEventId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    }
+                }, 100);
+            }
         }
 
         // Track current event and user interaction
@@ -880,13 +894,11 @@ const HTML_TEMPLATE = `
                     return;
                 }
 
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const totalHours = Math.floor(diff / (1000 * 60 * 60));
                 const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-                document.getElementById('days').textContent = String(days).padStart(2, '0');
-                document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('hours').textContent = String(totalHours).padStart(2, '0');
                 document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
                 document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
             }
