@@ -577,6 +577,7 @@ const HTML_TEMPLATE = `
         <header>
             <h1>🏎️ Singapore GP</h1>
             <div class="subtitle">2025 Schedule</div>
+            <div style="font-size: 0.75rem; color: #666; margin-top: 8px; text-transform: none; letter-spacing: 0;">All times in Singapore Time (SGT)</div>
         </header>
 
         <div class="countdown-container" id="countdown">
