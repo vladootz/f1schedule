@@ -2,6 +2,47 @@
 // Data source: https://www.formula1.com/en/latest/article/formula-1-singapore-airlines-singapore-grand-prix-2025.4BY11j0oHQpEJ8JdfH6nIa
 
 const SCHEDULE_DATA = {
+  test: [
+    {
+      name: "Test Event 1",
+      start: "2025-10-02T23:25:00+08:00",
+      end: "2025-10-02T23:26:00+08:00",
+      important: true
+    },
+    {
+      name: "Test Event 2",
+      start: "2025-10-02T23:26:00+08:00",
+      end: "2025-10-02T23:27:00+08:00"
+    },
+    {
+      name: "Test Event 3",
+      start: "2025-10-02T23:27:00+08:00",
+      end: "2025-10-02T23:28:00+08:00",
+      important: true
+    },
+    {
+      name: "Test Event 4",
+      start: "2025-10-02T23:28:00+08:00",
+      end: "2025-10-02T23:29:00+08:00"
+    },
+    {
+      name: "Test Event 5",
+      start: "2025-10-02T23:29:00+08:00",
+      end: "2025-10-02T23:30:00+08:00",
+      important: true
+    },
+    {
+      name: "Test Event 6",
+      start: "2025-10-02T23:30:00+08:00",
+      end: "2025-10-02T23:31:00+08:00"
+    },
+    {
+      name: "Test Event 7",
+      start: "2025-10-02T23:31:00+08:00",
+      end: "2025-10-02T23:32:00+08:00",
+      important: true
+    }
+  ],
   friday: [
     {
       name: "Porsche Carrera Cup Asia - Practice Session",
@@ -235,16 +276,15 @@ const HTML_TEMPLATE = `
 
         .event-card:hover {
             background: #222;
-            transform: translateX(5px);
         }
 
-        .event-card.current {
+        time-aware[current] .event-card {
             background: #1a2e1a;
             border-left-color: #00d800;
             box-shadow: 0 0 20px rgba(0, 216, 0, 0.2);
         }
 
-        .event-card.upcoming {
+        time-aware[upcoming] .event-card {
             border-left-color: #e10600;
         }
 
@@ -254,7 +294,7 @@ const HTML_TEMPLATE = `
             border-left-width: 5px;
         }
 
-        .event-card.important.current {
+        time-aware[current] .event-card.important {
             background: linear-gradient(135deg, #1a2e1a 0%, #0f1a0f 100%);
             border-left-color: #00d800;
         }
@@ -267,7 +307,7 @@ const HTML_TEMPLATE = `
             letter-spacing: 1px;
         }
 
-        .event-card.current .event-name {
+        time-aware[current] .event-card .event-name {
             color: #00d800;
         }
 
@@ -288,7 +328,7 @@ const HTML_TEMPLATE = `
             font-weight: 600;
         }
 
-        .event-card.current .time-badge {
+        time-aware[current] .event-card .time-badge {
             background: #003300;
             color: #00d800;
         }
@@ -326,6 +366,22 @@ const HTML_TEMPLATE = `
         .status-upcoming {
             background: #e10600;
             color: #fff;
+        }
+
+        time-aware[current] .status-live {
+            display: inline-block;
+        }
+
+        time-aware:not([current]) .status-live {
+            display: none;
+        }
+
+        time-aware[upcoming] .status-upcoming {
+            display: inline-block;
+        }
+
+        time-aware:not([upcoming]) .status-upcoming {
+            display: none;
         }
 
         .empty-state {
@@ -600,9 +656,14 @@ const HTML_TEMPLATE = `
         </div>
 
         <div class="tabs">
+            <button class="tab" data-day="test">Test</button>
             <button class="tab" data-day="friday">Friday</button>
             <button class="tab" data-day="saturday">Saturday</button>
             <button class="tab" data-day="sunday">Sunday</button>
+        </div>
+
+        <div id="test" class="tab-content">
+            <!-- Test events will be inserted here -->
         </div>
 
         <div id="friday" class="tab-content">
@@ -661,37 +722,31 @@ const HTML_TEMPLATE = `
                     return;
                 }
 
-                const now = new Date();
                 let html = '';
 
                 events.forEach((event, index) => {
                     const startTime = new Date(event.start);
                     const endTime = new Date(event.end);
-                    const isCurrent = now >= startTime && now <= endTime;
-                    const isUpcoming = now < startTime;
                     const isImportant = event.important || false;
 
                     let cardClass = 'event-card';
                     if (isImportant) cardClass += ' important';
-                    if (isCurrent) cardClass += ' current';
-                    else if (isUpcoming) cardClass += ' upcoming';
-
-                    const statusBadge = isCurrent ?
-                        '<span class="status-badge status-live"><span class="live-indicator"></span>LIVE NOW</span>' :
-                        isUpcoming ? '<span class="status-badge status-upcoming">Upcoming</span>' : '';
 
                     html += \`
-                        <div class="\${cardClass}" id="\${day}-event-\${index}">
-                            <div class="event-name">
-                                \${event.name}
-                                \${statusBadge}
+                        <time-aware start-time="\${event.start}" end-time="\${event.end}" id="\${day}-event-\${index}">
+                            <div class="\${cardClass}">
+                                <div class="event-name">
+                                    \${event.name}
+                                    <span class="status-badge status-live"><span class="live-indicator"></span>LIVE NOW</span>
+                                    <span class="status-badge status-upcoming">Upcoming</span>
+                                </div>
+                                <div class="event-time">
+                                    <span class="time-badge">\${formatTime(startTime)}</span>
+                                    <span>→</span>
+                                    <span class="time-badge">\${formatTime(endTime)}</span>
+                                </div>
                             </div>
-                            <div class="event-time">
-                                <span class="time-badge">\${formatTime(startTime)}</span>
-                                <span>→</span>
-                                <span class="time-badge">\${formatTime(endTime)}</span>
-                            </div>
-                        </div>
+                        </time-aware>
                     \`;
                 });
 
@@ -737,9 +792,8 @@ const HTML_TEMPLATE = `
             const now = new Date();
             let currentDay = null;
             let currentEventId = null;
-            let nextEventId = null;
 
-            // Find current or next event
+            // Find current event
             Object.keys(scheduleData).forEach(day => {
                 scheduleData[day].forEach((event, index) => {
                     const startTime = new Date(event.start);
@@ -749,11 +803,6 @@ const HTML_TEMPLATE = `
                     if (now >= startTime && now <= endTime) {
                         currentDay = day;
                         currentEventId = \`\${day}-event-\${index}\`;
-                    }
-                    // Track next upcoming event if we haven't found current event
-                    else if (!currentEventId && now < startTime && !nextEventId) {
-                        currentDay = day;
-                        nextEventId = \`\${day}-event-\${index}\`;
                     }
                 });
             });
@@ -769,7 +818,7 @@ const HTML_TEMPLATE = `
                 targetTab.click();
             }
 
-            // Scroll to current event only (not next upcoming)
+            // Scroll to current event only
             if (currentEventId) {
                 setTimeout(() => {
                     const targetElement = document.getElementById(currentEventId);
@@ -787,46 +836,50 @@ const HTML_TEMPLATE = `
         let lastNotifiedEventId = null;
         let userHasInteracted = false;
 
-        // Auto-refresh schedule to track event changes
-        function startAutoRefresh() {
-            setInterval(() => {
-                const now = new Date();
-                let currentEventId = null;
-                let currentDay = null;
-                let currentEventName = null;
+        // Listen for time-aware state changes
+        function setupTimeAwareListeners() {
+            document.body.addEventListener('statechanged', (e) => {
+                if (e.detail.state === 'current') {
+                    const timeAwareElement = e.target;
+                    const eventId = timeAwareElement.id;
 
-                // Find the current event
-                Object.keys(scheduleData).forEach(day => {
-                    scheduleData[day].forEach((event, index) => {
-                        const startTime = new Date(event.start);
-                        const endTime = new Date(event.end);
+                    // Extract day from event ID (format: "day-event-index")
+                    const currentDay = eventId.split('-')[0];
 
-                        if (now >= startTime && now <= endTime) {
-                            currentDay = day;
-                            currentEventId = \`\${day}-event-\${index}\`;
-                            currentEventName = event.name;
+                    // Get the parent tab content container
+                    const tabContent = document.getElementById(currentDay);
+
+                    // Only process events from the currently active tab OR if user hasn't interacted yet
+                    const isTabActive = tabContent && tabContent.classList.contains('active');
+
+                    if (!isTabActive && userHasInteracted) {
+                        // If tab is not active and user has interacted, show notification
+                        const currentEventName = timeAwareElement.querySelector('.event-name').textContent.trim();
+
+                        if (eventId && eventId !== lastNotifiedEventId) {
+                            showNotification(currentEventName, currentDay, eventId);
+                            lastNotifiedEventId = eventId;
                         }
-                    });
-                });
-
-                // Re-render schedule to update highlighting
-                renderSchedule();
-
-                // Check if event has changed and user is on a different tab
-                if (currentDay && currentEventId && currentEventId !== lastNotifiedEventId) {
-                    const activeTab = document.querySelector('.tab.active');
-
-                    if (userHasInteracted && activeTab && activeTab.dataset.day !== currentDay) {
-                        // Show notification instead of switching
-                        showNotification(currentEventName, currentDay, currentEventId);
-                    } else if (!userHasInteracted) {
-                        // Auto-switch only on initial load
-                        switchToEvent(currentDay, currentEventId);
+                        return;
                     }
 
-                    lastNotifiedEventId = currentEventId;
+                    // Process normally for active tab or initial load
+                    if (eventId && eventId !== lastNotifiedEventId) {
+                        const currentEventName = timeAwareElement.querySelector('.event-name').textContent.trim();
+                        const activeTab = document.querySelector('.tab.active');
+
+                        if (userHasInteracted && activeTab && activeTab.dataset.day !== currentDay) {
+                            // Show notification instead of switching
+                            showNotification(currentEventName, currentDay, eventId);
+                        } else if (!userHasInteracted) {
+                            // Auto-switch only on initial load
+                            switchToEvent(currentDay, eventId);
+                        }
+
+                        lastNotifiedEventId = eventId;
+                    }
                 }
-            }, 60000); // Check every 1 minute
+            });
         }
 
         // Show notification
@@ -910,8 +963,224 @@ const HTML_TEMPLATE = `
 
         // Start the app
         init();
-        startAutoRefresh();
+        setupTimeAwareListeners();
         startCountdown();
+    </script>
+
+    <script type="text/javascript">
+
+    class TimeAware extends HTMLElement
+    {
+        constructor()
+        {
+            super();
+            this._internals = this.attachInternals();
+
+            this._startTime = null;
+            this._endTime = null;
+            this._intervalMilliseconds = TimeAware.DefaultConfig.intervalMilliseconds;
+            this._upcomingMilliseconds = TimeAware.DefaultConfig.upcomingMilliseconds;
+        }
+
+        static observedAttributes = ["start-time", "end-time", "refresh-interval-milliseconds", "upcoming-threshold-milliseconds"];
+
+        static DefaultConfig = {
+            intervalMilliseconds: 1000 * 60, // one minute
+            upcomingMilliseconds: 1000 * 60 * 30, // 30 minutes
+        };
+
+        static States = {
+            Past: "past",
+            Current: "current",
+            Upcoming: "upcoming",
+            Future: "future",
+        }
+
+        /* State property getters match element attribute names. */
+
+        get past() { return this._hasState(TimeAware.States.Past); }
+
+        get current() { return this._hasState(TimeAware.States.Current); }
+
+        get upcoming() { return this._hasState(TimeAware.States.Upcoming); }
+
+        get future() { return this._hasState(TimeAware.States.Future); }
+
+        connectedCallback()
+        {
+            this._initialize();
+        }
+
+        disconnectedCallback()
+        {
+            clearInterval(this._intervalId);
+        }
+
+        attributeChangedCallback(attributeName, oldValue, newValue)
+        {
+            switch (attributeName) {
+            case "start-time":
+                this._startTime = this._configureAsDate({attributeName, dateString: newValue});
+                break;
+
+            case "end-time":
+                this._endTime = this._configureAsDate({attributeName, dateString: newValue});
+                break;
+
+            case "refresh-interval-milliseconds":
+                this._intervalMilliseconds = this._configureAsMilliseconds({attributeName, millisecondsString: newValue, fallbackValue: TimeAware.DefaultConfig.intervalMilliseconds});
+                break;
+
+            case "upcoming-threshold-milliseconds":
+                this._upcomingMilliseconds = this._configureAsMilliseconds({attributeName, millisecondsString: newValue, fallbackValue: TimeAware.DefaultConfig.upcomingMilliseconds});
+                break;
+            }
+
+            // Restart periodic check when the time frame changes for a past event. It will stop again if it's still in the past.
+            if (this._hasState(TimeAware.States.Past) && (attributeName === "start-time" || attributeName === "end-time"))
+                this._initialize();
+        }
+
+        _initialize()
+        {
+            if (!this._startTime) {
+                console.error(\`Invalid configuration for start time. Expected Date got: \${this._startTime}\`);
+                return;
+            }
+
+            if (!this._endTime) {
+                console.error(\`Invalid configuration for end time. Expected Date got: \${this._endTime}\`);
+                return;
+            }
+
+            if (this._startTime > this._endTime) {
+                console.error(\`Invalid configuration: start time \${this._startTime} occurs after end time \${this._endTime}\`);
+                return;
+            }
+
+            this._intervalId = setInterval(() => this._refresh(), this._intervalMilliseconds);
+            this._refresh();
+        }
+
+        _stop()
+        {
+            clearInterval(this._intervalId);
+        }
+
+        _refresh()
+        {
+            let startTimeMs = this._startTime.getTime();
+            let endTimeMs = this._endTime.getTime();
+            let nowMs = new Date().getTime();
+            let upcomingMilliseconds = this._upcomingMilliseconds;
+
+            function getState() {
+                if (nowMs > endTimeMs)
+                    return TimeAware.States.Past;
+
+                if ((startTimeMs < nowMs) && (nowMs < endTimeMs))
+                    return TimeAware.States.Current;
+
+                // NOTE: Early return of "upcoming" state means we have to append "future" state outside this function.
+                if (upcomingMilliseconds && (nowMs < startTimeMs) && (startTimeMs < nowMs + upcomingMilliseconds) && (nowMs + upcomingMilliseconds < endTimeMs))
+                    return TimeAware.States.Upcoming;
+
+                if (nowMs < startTimeMs)
+                    return TimeAware.States.Future;
+            }
+
+            let state = getState();
+            this._setState(state);
+
+            if (state === TimeAware.States.Upcoming)
+                this._setState(TimeAware.States.Future);
+        }
+
+        _setState(value)
+        {
+            if (this._hasState(value))
+                return;
+
+            let statesToClear;
+
+            switch(value) {
+            case TimeAware.States.Future:
+                statesToClear = [TimeAware.States.Past, TimeAware.States.Current]; // Do not clear TimeAware.States.Upcoming
+                break;
+
+            case TimeAware.States.Past:
+                statesToClear = [TimeAware.States.Current, TimeAware.States.Upcoming, TimeAware.States.Future];
+                break;
+
+            case TimeAware.States.Current:
+                statesToClear = [TimeAware.States.Past, TimeAware.States.Upcoming, TimeAware.States.Future];
+                break;
+
+            case TimeAware.States.Upcoming:
+                statesToClear = [TimeAware.States.Past, TimeAware.States.Current]; // Do not clear TimeAware.States.Future
+                break;
+
+            default:
+                console.error(\`Unexpected state. Expected one of: \${Object.values(TimeAware.States)}, got \${value}\`);
+                return;
+            }
+
+            for (let state of statesToClear) {
+                this._internals?.states?.delete(state);
+                this.removeAttribute(state);
+            }
+
+            this._internals?.states?.add(value);
+            this.setAttribute(value, "");
+
+            if (value === TimeAware.States.Past)
+                this._stop();
+
+            this.dispatchEvent(new CustomEvent("statechanged", { detail: { state: value }, bubbles: true, cancelable: true }));
+        }
+
+        _hasState(value)
+        {
+            if (this._internals?.states)
+                return this._internals.states.has(value);
+
+            return this.hasAttribute(value);
+        }
+
+        _configureAsDate({dateString, attributeName} = {})
+        {
+            let date = new Date(dateString);
+            // Handle \`null\` value because \`new Date(null)\` returns date at the beginning of the UNIX epoch.
+            if (dateString === null || date.toUTCString() == "Invalid Date")
+                console.error(\`Invalid value for "\${attributeName}" attribute. Expected date time string format, got \${dateString}.\\nSee https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#date_time_string_format\`);
+
+            return date;
+        }
+
+        _configureAsMilliseconds({millisecondsString, attributeName, fallbackValue} = {}) {
+            let value = fallbackValue;
+
+            if (millisecondsString === null)
+                return value;
+
+            let millisecondsNumber = parseInt(millisecondsString, 10);
+
+            if (millisecondsString && (millisecondsNumber.toString() === millisecondsString) && millisecondsNumber > 0)
+                value = millisecondsNumber;
+            else if (millisecondsString) {
+                console.warn(\`Invalid value for "\${attributeName}" attribute. Expected positive number of milliseconds as String, got: \${millisecondsString}.\\nFalling back to default: \${fallbackValue}\`);
+                value = fallbackValue;
+            }
+
+            return value;
+        }
+    }
+
+    // Set the global default configuration
+    TimeAware.DefaultConfig.intervalMilliseconds = 1000 * 2; // 2 seconds
+
+    customElements.define("time-aware", TimeAware);
+
     </script>
 </body>
 </html>
