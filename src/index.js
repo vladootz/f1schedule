@@ -2,47 +2,6 @@
 // Data source: https://www.formula1.com/en/latest/article/formula-1-singapore-airlines-singapore-grand-prix-2025.4BY11j0oHQpEJ8JdfH6nIa
 
 const SCHEDULE_DATA = {
-  test: [
-    {
-      name: "Test Event 1",
-      start: "2025-10-02T23:25:00+08:00",
-      end: "2025-10-02T23:26:00+08:00",
-      important: true
-    },
-    {
-      name: "Test Event 2",
-      start: "2025-10-02T23:26:00+08:00",
-      end: "2025-10-02T23:27:00+08:00"
-    },
-    {
-      name: "Test Event 3",
-      start: "2025-10-02T23:27:00+08:00",
-      end: "2025-10-02T23:28:00+08:00",
-      important: true
-    },
-    {
-      name: "Test Event 4",
-      start: "2025-10-02T23:28:00+08:00",
-      end: "2025-10-02T23:29:00+08:00"
-    },
-    {
-      name: "Test Event 5",
-      start: "2025-10-02T23:29:00+08:00",
-      end: "2025-10-02T23:30:00+08:00",
-      important: true
-    },
-    {
-      name: "Test Event 6",
-      start: "2025-10-02T23:30:00+08:00",
-      end: "2025-10-02T23:31:00+08:00"
-    },
-    {
-      name: "Test Event 7",
-      start: "2025-10-02T23:31:00+08:00",
-      end: "2025-10-02T23:32:00+08:00",
-      important: true
-    }
-  ],
   friday: [
     {
       name: "Porsche Carrera Cup Asia - Practice Session",
@@ -656,14 +615,9 @@ const HTML_TEMPLATE = `
         </div>
 
         <div class="tabs">
-            <button class="tab" data-day="test">Test</button>
             <button class="tab" data-day="friday">Friday</button>
             <button class="tab" data-day="saturday">Saturday</button>
             <button class="tab" data-day="sunday">Sunday</button>
-        </div>
-
-        <div id="test" class="tab-content">
-            <!-- Test events will be inserted here -->
         </div>
 
         <div id="friday" class="tab-content">
