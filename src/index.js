@@ -142,8 +142,6 @@ const HTML_TEMPLATE = `
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>F1 Singapore GP Schedule</title>
-    <script defer data-domain="f1.metabuild.ing" src="https://data.websquad.ro/js/script.file-downloads.hash.outbound-links.js"></script>
-    <script>window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }</script>
     <style>
         * {
             margin: 0;
